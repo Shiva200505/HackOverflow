@@ -1,0 +1,207 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  STUDENT
+  MANAGEMENT
+}
+
+enum IssueCategory {
+  PLUMBING
+  ELECTRICAL
+  CLEANLINESS
+  INTERNET
+  FURNITURE
+  SECURITY
+  OTHER
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  EMERGENCY
+}
+
+enum IssueStatus {
+  REPORTED
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum AnnouncementType {
+  CLEANING
+  PEST_CONTROL
+  DOWNTIME
+  MAINTENANCE
+  GENERAL
+}
+
+enum LostFoundType {
+  LOST
+  FOUND
+}
+
+enum LFStatus {
+  ACTIVE
+  CLAIMED
+  CLOSED
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            String          @id @default(cuid())
+  email         String          @unique
+  name          String
+  password      String
+  role          Role            @default(STUDENT)
+  hostel        String?
+  block         String?
+  room          String?
+  avatar        String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  issues        Issue[]
+  comments      Comment[]
+  announcements Announcement[]
+  lostItems     LostFound[]
+  reactions     Reaction[]
+}
+
+model Issue {
+  id            String        @id @default(cuid())
+  title         String
+  description   String
+  category      IssueCategory
+  priority      Priority
+  status        IssueStatus   @default(REPORTED)
+  visibility    Visibility    @default(PUBLIC)
+  
+  hostel        String
+  block         String
+  room          String
+  
+  mediaUrls     String[]
+  
+  reporterId    String
+  reporter      User          @relation(fields: [reporterId], references: [id])
+  
+  assignedTo    String?
+  
+  reportedAt    DateTime      @default(now())
+  assignedAt    DateTime?
+  inProgressAt  DateTime?
+  resolvedAt    DateTime?
+  closedAt      DateTime?
+  
+  comments      Comment[]
+  reactions     Reaction[]
+  
+  mergedInto    String?
+  mergedIssues  String[]
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Announcement {
+  id            String            @id @default(cuid())
+  title         String
+  content       String
+  type          AnnouncementType
+  
+  targetHostels String[]
+  targetBlocks  String[]
+  targetRoles   Role[]
+  
+  authorId      String
+  author        User              @relation(fields: [authorId], references: [id])
+  
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  
+  comments      Comment[]
+  reactions     Reaction[]
+}
+
+model LostFound {
+  id            String        @id @default(cuid())
+  type          LostFoundType
+  itemName      String
+  description   String
+  location      String
+  contactInfo   String?
+  date          DateTime
+  imageUrls     String[]
+  status        LFStatus      @default(ACTIVE)
+  
+  reporterId    String
+  reporter      User          @relation(fields: [reporterId], references: [id])
+  
+  claimedBy     String?
+  claimStatus   ClaimStatus?
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Comment {
+  id              String        @id @default(cuid())
+  content         String
+  
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  
+  issueId         String?
+  issue           Issue?        @relation(fields: [issueId], references: [id])
+  
+  announcementId  String?
+  announcement    Announcement? @relation(fields: [announcementId], references: [id])
+  
+  parentId        String?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Reaction {
+  id              String        @id @default(cuid())
+  type            String
+  
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  
+  issueId         String?
+  issue           Issue?        @relation(fields: [issueId], references: [id])
+  
+  announcementId  String?
+  announcement    Announcement? @relation(fields: [announcementId], references: [id])
+  
+  createdAt       DateTime      @default(now())
+  
+  @@unique([userId, issueId, type])
+  @@unique([userId, announcementId, type])
+}
