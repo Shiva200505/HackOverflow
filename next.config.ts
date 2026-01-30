@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ['groq-sdk'],
-  },
+  // Dynamic imports handle external packages, no additional config needed
 };
 
 export default nextConfig;
