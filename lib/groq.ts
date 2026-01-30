@@ -1,6 +1,4 @@
 
-import Groq from "groq-sdk";
-
 export interface AIMetadata {
     title: string;
     description: string;
@@ -8,9 +6,9 @@ export interface AIMetadata {
     priority: "LOW" | "MEDIUM" | "HIGH" | "EMERGENCY";
 }
 
-let groqInstance: Groq | null = null;
+let groqInstance: any = null;
 
-function getGroqClient() {
+async function getGroqClient() {
     if (groqInstance) return groqInstance;
 
     const apiKey = process.env.GROQ_API_KEY;
@@ -19,13 +17,19 @@ function getGroqClient() {
         return null;
     }
 
-    groqInstance = new Groq({ apiKey });
-    return groqInstance;
+    try {
+        const { default: Groq } = await import('groq-sdk');
+        groqInstance = new Groq({ apiKey });
+        return groqInstance;
+    } catch (error) {
+        console.error("Failed to load groq-sdk:", error);
+        return null;
+    }
 }
 
 export async function parseIssueFromVoice(transcript: string): Promise<AIMetadata> {
     try {
-        const groq = getGroqClient();
+        const groq = await getGroqClient();
 
         if (!groq) {
             return {
