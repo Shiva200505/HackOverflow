@@ -1,5 +1,8 @@
 
 import { NextResponse } from "next/server";
+
+export const dynamic = 'force-dynamic';
+
 import { auth } from "@/lib/auth";
 import { parseIssueFromVoice } from "@/lib/groq";
 
