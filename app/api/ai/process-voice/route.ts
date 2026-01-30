@@ -2,6 +2,8 @@
 import { NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const revalidate = 0;
 
 import { auth } from "@/lib/auth";
 import { parseIssueFromVoice } from "@/lib/groq";
