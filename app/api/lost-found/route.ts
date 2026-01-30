@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
+
+export const dynamic = 'force-dynamic';
+
 import { prisma } from "@/lib/prisma"
 import { lostFoundSchema } from "@/lib/validations"
 
