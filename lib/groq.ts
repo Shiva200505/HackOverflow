@@ -15,7 +15,8 @@ function getGroqClient() {
 
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-        throw new Error("Missing GROQ_API_KEY environment variable");
+        console.warn("Missing GROQ_API_KEY environment variable. AI features will be disabled.");
+        return null;
     }
 
     groqInstance = new Groq({ apiKey });
@@ -25,6 +26,15 @@ function getGroqClient() {
 export async function parseIssueFromVoice(transcript: string): Promise<AIMetadata> {
     try {
         const groq = getGroqClient();
+
+        if (!groq) {
+            return {
+                title: "Voice Report (AI Disabled)",
+                description: transcript,
+                category: "OTHER",
+                priority: "MEDIUM",
+            };
+        }
 
         const prompt = `
         You are an AI assistant for a hostel issue tracker.
